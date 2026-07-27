@@ -350,6 +350,7 @@
             container.prepend(riga);
             aggiornaVisibilitaRiga(riga);
         }
+        
 
         function aggiornaVisibilitaRiga(riga) {
             const stato = riga.querySelector('.riga-stato');
