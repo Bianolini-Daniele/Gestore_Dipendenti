@@ -118,7 +118,7 @@
             <div class="card-body row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Stato dipendente *</label>
-                    <select name="stato_dipendente" class="form-select" required>
+                    <select name="stato_dipendente" id="stato_dipendente" class="form-select" required>
                         @foreach (\App\Models\Anagrafica::STATI_DIPENDENTE as $valore => $etichetta)
                             <option value="{{ $valore }}" @selected(old('stato_dipendente', $d?->stato_dipendente ?? 'on_boarding') === $valore)>
                                 {{ $etichetta }}
@@ -143,23 +143,35 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Data assunzione</label>
-                    <input type="date" name="data_assunzione" class="form-control" value="{{ old('data_assunzione', $d?->data_assunzione?->format('Y-m-d')) }}">
+                    <label class="form-label">
+                        Data assunzione
+                        <span class="text-danger campo-obbligatorio" data-gruppo="onboarding" style="display:none">*</span>
+                    </label>
+                    <input type="date" name="data_assunzione" id="data_assunzione" class="form-control" value="{{ old('data_assunzione', $d?->data_assunzione?->format('Y-m-d')) }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Primo giorno lavorativo</label>
-                    <input type="date" name="primo_giorno_lavorativo" class="form-control" value="{{ old('primo_giorno_lavorativo', $d?->primo_giorno_lavorativo?->format('Y-m-d')) }}">
+                    <label class="form-label">
+                        Primo giorno lavorativo
+                        <span class="text-danger campo-obbligatorio" data-gruppo="onboarding" style="display:none">*</span>
+                    </label>
+                    <input type="date" name="primo_giorno_lavorativo" id="primo_giorno_lavorativo" class="form-control" value="{{ old('primo_giorno_lavorativo', $d?->primo_giorno_lavorativo?->format('Y-m-d')) }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Data licenziamento/dimissione</label>
-                    <input type="date" name="data_cessazione" class="form-control" value="{{ old('data_cessazione', $d?->data_cessazione?->format('Y-m-d')) }}">
+                    <label class="form-label">
+                        Data licenziamento/dimissione
+                        <span class="text-danger campo-obbligatorio" data-gruppo="offboarding" style="display:none">*</span>
+                    </label>
+                    <input type="date" name="data_cessazione" id="data_cessazione" class="form-control" value="{{ old('data_cessazione', $d?->data_cessazione?->format('Y-m-d')) }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Ultimo giorno lavorativo</label>
-                    <input type="date" name="ultimo_giorno_lavorativo" class="form-control" value="{{ old('ultimo_giorno_lavorativo', $d?->ultimo_giorno_lavorativo?->format('Y-m-d')) }}">
+                    <label class="form-label">
+                        Ultimo giorno lavorativo
+                        <span class="text-danger campo-obbligatorio" data-gruppo="offboarding" style="display:none">*</span>
+                    </label>
+                    <input type="date" name="ultimo_giorno_lavorativo" id="ultimo_giorno_lavorativo" class="form-control" value="{{ old('ultimo_giorno_lavorativo', $d?->ultimo_giorno_lavorativo?->format('Y-m-d')) }}">
                 </div>
             </div>
         </div>
@@ -420,5 +432,63 @@
 
             riga.remove();
         });
+        
+        const statoDipendenteSelect = document.getElementById('stato_dipendente');
+        const campoDataAssunzione = document.getElementById('data_assunzione');
+        const campoPrimoGiorno = document.getElementById('primo_giorno_lavorativo');
+        const campoDataCessazione = document.getElementById('data_cessazione');
+        const campoUltimoGiorno = document.getElementById('ultimo_giorno_lavorativo');
+
+        function aggiornaObbligatorietaDate() {
+            const stato = statoDipendenteSelect.value;
+            const isOnboarding = stato === 'on_boarding';
+            const isOffboarding = stato === 'off_boarding';
+
+            campoDataAssunzione.required = isOnboarding;
+            campoPrimoGiorno.required = isOnboarding;
+            campoDataCessazione.required = isOffboarding;
+            campoUltimoGiorno.required = isOffboarding;
+
+            document.querySelectorAll('.campo-obbligatorio[data-gruppo="onboarding"]').forEach(function (span) {
+                span.style.display = isOnboarding ? '' : 'none';
+            });
+            document.querySelectorAll('.campo-obbligatorio[data-gruppo="offboarding"]').forEach(function (span) {
+                span.style.display = isOffboarding ? '' : 'none';
+            });
+        }
+
+        // Selezionando una data di assunzione e/o primo giorno lavorativo -> stato On Boarding
+        [campoDataAssunzione, campoPrimoGiorno].forEach(function (campo) {
+            campo.addEventListener('change', function () {
+                if (campo.value) {
+                    statoDipendenteSelect.value = 'on_boarding';
+                }
+                aggiornaObbligatorietaDate();
+            });
+        });
+
+        // Selezionando data di licenziamento e/o ultimo giorno lavorativo -> stato Off Boarding
+        [campoDataCessazione, campoUltimoGiorno].forEach(function (campo) {
+            campo.addEventListener('change', function () {
+                if (campo.value) {
+                    statoDipendenteSelect.value = 'off_boarding';
+                }
+                aggiornaObbligatorietaDate();
+            });
+        });
+
+        // Se lo stato viene cambiato manualmente, aggiorna comunque l'obbligatorietà
+        statoDipendenteSelect.addEventListener('change', aggiornaObbligatorietaDate);
+
+        // Se un campo obbligatorio nascosto in un altro tab blocca l'invio,
+        // porta automaticamente l'utente sul tab "Dati lavorativi"
+        [campoDataAssunzione, campoPrimoGiorno, campoDataCessazione, campoUltimoGiorno].forEach(function (campo) {
+            campo.addEventListener('invalid', function () {
+                document.getElementById('tab-lavorativi-btn').click();
+            });
+        });
+
+        // Stato iniziale (utile in fase di modifica di un dipendente esistente)
+        aggiornaObbligatorietaDate();
     })();
 </script>

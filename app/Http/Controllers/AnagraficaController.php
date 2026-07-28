@@ -255,21 +255,28 @@ class AnagraficaController extends Controller
             'residenza_aggiornata_al' => ['nullable', 'date'],
 
             'iban' => ['nullable', 'string', 'max:34'],
-            'data_assunzione' => ['nullable', 'date'],
+            'data_assunzione' => [
+                'nullable',
+                'date',
+                Rule::requiredIf(fn () => $request->input('stato_dipendente') === 'on_boarding'),
+            ],
             'primo_giorno_lavorativo' => [
                 'nullable',
                 'date',
                 'after_or_equal:data_assunzione',
+                Rule::requiredIf(fn () => $request->input('stato_dipendente') === 'on_boarding'),
             ],
             'data_cessazione' => [
                 'nullable',
                 'date',
                 'after_or_equal:data_assunzione',
+                Rule::requiredIf(fn () => $request->input('stato_dipendente') === 'off_boarding'),
             ],
             'ultimo_giorno_lavorativo' => [
                 'nullable',
                 'date',
                 'after_or_equal:primo_giorno_lavorativo',
+                Rule::requiredIf(fn () => $request->input('stato_dipendente') === 'off_boarding'),
             ],
             'mansione' => ['nullable', 'string', 'max:255'],
             'reparto' => ['nullable', 'string', 'max:255'],
