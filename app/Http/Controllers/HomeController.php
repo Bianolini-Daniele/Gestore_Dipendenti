@@ -20,11 +20,17 @@ class HomeController extends Controller
 
         $queryDocumenti = Documento::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'IT');
+            ->where('responsabilita', 'IT')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         $queryDotazioni = Dotazione::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'IT');
+            ->where('responsabilita', 'IT')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
@@ -133,11 +139,17 @@ class HomeController extends Controller
 
         $queryDocumenti = Documento::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'Admin');
+            ->where('responsabilita', 'Admin')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         $queryDotazioni = Dotazione::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'Admin');
+            ->where('responsabilita', 'Admin')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
@@ -237,11 +249,17 @@ class HomeController extends Controller
 
         $queryDocumenti = Documento::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'Altri');
+            ->where('responsabilita', 'Altri')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         $queryDotazioni = Dotazione::with('anagrafica')
             ->where('stato', 'richiesta')
-            ->where('responsabilita', 'Altri');
+            ->where('responsabilita', 'Altri')
+            ->whereHas('anagrafica', function ($query) {
+                $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
+            });
 
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
