@@ -4,6 +4,7 @@
 
 @php
     $isHR = session('area_accesso') === 'HR';
+    $isDisabilitato = $anagrafica->isDisabilitato();
 
     $badgeUrgenza = [
         'bassa' => 'bg-secondary',
@@ -87,5 +88,5 @@
         </ul>
     </div>
 
-    <a href="{{ route('anagrafiche.index') }}" class="btn btn-secondary mt-3">Torna all'elenco</a>
+    <a href="{{ route('anagrafiche.index', $isDisabilitato ? ['stato' => 'disabilitati'] : []) }}" class="btn btn-secondary mt-3">Torna all'elenco</a>
 @endsection

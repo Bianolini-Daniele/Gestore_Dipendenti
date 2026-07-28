@@ -173,6 +173,7 @@
                                 <form action="{{ route('documenti.risolvi', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
+                                    <input type="hidden" name="stato_richiesta" value="{{ $documento->risolto ? 'non_risolta' : 'risolta' }}">
                                     <button type="submit" class="btn btn-sm {{ $documento->risolto ? 'btn-outline-warning' : 'btn-outline-success' }}">
                                         {{ $documento->risolto ? 'Riapri richiesta' : 'Segna risolto' }}
                                     </button>
@@ -261,6 +262,7 @@
                                 <form action="{{ route('dotazioni.risolvi', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
+                                    <input type="hidden" name="stato_richiesta" value="{{ $dotazione->risolto ? 'non_risolta' : 'risolta' }}">
                                     <button type="submit" class="btn btn-sm {{ $dotazione->risolto ? 'btn-outline-warning' : 'btn-outline-success' }}">
                                         {{ $dotazione->risolto ? 'Riapri richiesta' : 'Segna risolto' }}
                                     </button>
