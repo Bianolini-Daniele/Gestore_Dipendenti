@@ -4,11 +4,13 @@
 
 @php
     $isHR = session('area_accesso') === 'HR';
+    $isDisabilitato = $anagrafica->isDisabilitato();
 
     $badgeStato = [
         'on_boarding' => 'bg-info text-dark',
         'dipendente' => 'bg-success',
         'off_boarding' => 'bg-secondary',
+        'disabilitato' => 'bg-dark',
     ][$anagrafica->stato_dipendente] ?? 'bg-secondary';
 
     $badgeUrgenza = [
@@ -27,13 +29,21 @@
 
         @if ($isHR)
             <div class="d-flex gap-2">
-                <a href="{{ route('anagrafiche.edit', $anagrafica) }}" class="btn btn-primary">Modifica</a>
+                @if ($isDisabilitato)
+                    <form action="{{ route('anagrafiche.riattiva', $anagrafica) }}" method="POST" onsubmit="return confirm('Riportare {{ $anagrafica->nome_completo }} in Off Boarding?')">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-outline-secondary">Riattiva (torna a Off Boarding)</button>
+                    </form>
+                @else
+                    <a href="{{ route('anagrafiche.edit', $anagrafica) }}" class="btn btn-primary">Modifica</a>
 
-                <form action="{{ route('anagrafiche.destroy', $anagrafica) }}" method="POST" onsubmit="return confirm('Eliminare definitivamente {{ $anagrafica->nome_completo }} e tutti i suoi documenti/dotazioni?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger">Elimina</button>
-                </form>
+                    <form action="{{ route('anagrafiche.disabilita', $anagrafica) }}" method="POST" onsubmit="return confirm('Disabilitare {{ $anagrafica->nome_completo }}? Non sarà più visibile nell\'elenco standard e non sarà più modificabile.')">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-outline-danger">Disabilita</button>
+                    </form>
+                @endif
             </div>
         @endif
     </div>
@@ -110,7 +120,7 @@
                 @endif
                 Documenti
             </strong>
-            @if ($isHR)
+            @if ($isHR && !$isDisabilitato)
                 <a href="{{ route('anagrafiche.documenti.create', $anagrafica) }}" class="btn btn-sm btn-primary">Aggiungi documento</a>
             @endif
         </div>
@@ -159,7 +169,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($documento->stato === 'richiesta')
+                            @if ($documento->stato === 'richiesta' && !$isDisabilitato)
                                 <form action="{{ route('documenti.risolvi', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
@@ -176,7 +186,7 @@
 
                             <a href="{{ route('documenti.show', $documento) }}" class="btn btn-sm btn-outline-info">Dettaglio</a>
 
-                            @if ($isHR)
+                            @if ($isHR && !$isDisabilitato)
                                 <a href="{{ route('anagrafiche.documenti.edit', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" class="btn btn-sm btn-outline-primary">Modifica</a>
 
                                 <form action="{{ route('anagrafiche.documenti.destroy', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" method="POST" onsubmit="return confirm('Eliminare il documento?')">
@@ -202,7 +212,7 @@
                 @endif
                 Dotazioni
             </strong>
-            @if ($isHR)
+            @if ($isHR && !$isDisabilitato)
                 <a href="{{ route('anagrafiche.dotazioni.create', $anagrafica) }}" class="btn btn-sm btn-primary">Aggiungi dotazione</a>
             @endif
         </div>
@@ -247,7 +257,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($dotazione->stato === 'richiesta')
+                            @if ($dotazione->stato === 'richiesta' && !$isDisabilitato)
                                 <form action="{{ route('dotazioni.risolvi', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
@@ -259,7 +269,7 @@
 
                             <a href="{{ route('dotazioni.show', $dotazione) }}" class="btn btn-sm btn-outline-info">Dettaglio</a>
 
-                            @if ($isHR)
+                            @if ($isHR && !$isDisabilitato)
                                 <a href="{{ route('anagrafiche.dotazioni.edit', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" class="btn btn-sm btn-outline-primary">Modifica</a>
 
                                 <form action="{{ route('anagrafiche.dotazioni.destroy', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" method="POST" onsubmit="return confirm('Eliminare la dotazione?')">
@@ -277,5 +287,5 @@
         </ul>
     </div>
 
-    <a href="{{ route('anagrafiche.index') }}" class="btn btn-secondary mt-3">Torna all'elenco</a>
+<a href="{{ route('anagrafiche.index', $isDisabilitato ? ['stato' => 'disabilitati'] : []) }}" class="btn btn-secondary mt-3">Torna all'elenco</a>
 @endsection

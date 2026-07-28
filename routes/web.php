@@ -20,24 +20,39 @@ Route::middleware('accesso')->group(function () {
     Route::get('/home/admin', [HomeController::class, 'admin'])->name('home.admin');
     Route::get('/home/altro', [HomeController::class, 'altro'])->name('home.altro');
 
-   
     Route::middleware('ruolo:HR')->group(function () {
         Route::resource('anagrafiche', AnagraficaController::class)
             ->parameters(['anagrafiche' => 'anagrafica'])
-            ->only(['create', 'store', 'edit', 'update', 'destroy']);
+            ->only(['create', 'store']);
 
         Route::patch(
-            'anagrafiche/{anagrafica}/stato',
-            [AnagraficaController::class, 'updateStato']
-        )->name('anagrafiche.stato');
+            'anagrafiche/{anagrafica}/disabilita',
+            [AnagraficaController::class, 'disabilita']
+        )->name('anagrafiche.disabilita');
 
-        Route::resource('anagrafiche.documenti', DocumentoController::class)
-            ->parameters(['anagrafiche' => 'anagrafica', 'documenti' => 'documento'])
-            ->except(['index', 'show']);
+        Route::patch(
+            'anagrafiche/{anagrafica}/riattiva',
+            [AnagraficaController::class, 'riattiva']
+        )->name('anagrafiche.riattiva');
 
-        Route::resource('anagrafiche.dotazioni', DotazioneController::class)
-            ->parameters(['anagrafiche' => 'anagrafica', 'dotazioni' => 'dotazione'])
-            ->except(['index', 'show']);
+        Route::middleware('anagrafica.attiva')->group(function () {
+            Route::resource('anagrafiche', AnagraficaController::class)
+                ->parameters(['anagrafiche' => 'anagrafica'])
+                ->only(['edit', 'update']);
+
+            Route::patch(
+                'anagrafiche/{anagrafica}/stato',
+                [AnagraficaController::class, 'updateStato']
+            )->name('anagrafiche.stato');
+
+            Route::resource('anagrafiche.documenti', DocumentoController::class)
+                ->parameters(['anagrafiche' => 'anagrafica', 'documenti' => 'documento'])
+                ->except(['index', 'show']);
+
+            Route::resource('anagrafiche.dotazioni', DotazioneController::class)
+                ->parameters(['anagrafiche' => 'anagrafica', 'dotazioni' => 'dotazione'])
+                ->except(['index', 'show']);
+        });
     });
 
     Route::get(
@@ -64,15 +79,17 @@ Route::middleware('accesso')->group(function () {
         ->name('anagrafiche.dotazioni.index');
 
 
-    Route::patch(
-        'anagrafiche/{anagrafica}/documenti/{documento}/risolvi',
-        [DocumentoController::class, 'risolvi']
-    )->name('documenti.risolvi');
+    Route::middleware('anagrafica.attiva')->group(function () {
+        Route::patch(
+            'anagrafiche/{anagrafica}/documenti/{documento}/risolvi',
+            [DocumentoController::class, 'risolvi']
+        )->name('documenti.risolvi');
 
-    Route::patch(
-        'anagrafiche/{anagrafica}/dotazioni/{dotazione}/risolvi',
-        [DotazioneController::class, 'risolvi']
-    )->name('dotazioni.risolvi');
+        Route::patch(
+            'anagrafiche/{anagrafica}/dotazioni/{dotazione}/risolvi',
+            [DotazioneController::class, 'risolvi']
+        )->name('dotazioni.risolvi');
+    });
 
     Route::get('documenti/{documento}/download', [DocumentoController::class, 'download'])
         ->name('documenti.download');

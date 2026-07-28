@@ -34,6 +34,9 @@
                                         @foreach (\App\Models\Anagrafica::STATI_DIPENDENTE as $valore => $etichetta)
                                             <option value="{{ $valore }}" @selected($filtro === $valore)>{{ $etichetta }}</option>
                                         @endforeach
+                                        @if ($isHR)
+                                            <option value="disabilitati" @selected($filtro === 'disabilitati')>Disabilitati</option>
+                                        @endif
                                     </select>
                                 </form>
                             </div>
@@ -59,15 +62,19 @@
                             </td>
 
                             <td>
-                                <form method="POST" action="{{ route('anagrafiche.stato', $anagrafica) }}" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <select name="stato_dipendente" class="form-select form-select-sm" onchange="this.form.submit()">
-                                        @foreach (\App\Models\Anagrafica::STATI_DIPENDENTE as $valore => $etichetta)
-                                            <option value="{{ $valore }}" @selected($anagrafica->stato_dipendente === $valore)>{{ $etichetta }}</option>
-                                        @endforeach
-                                    </select>
-                                </form>
+                                @if ($anagrafica->isDisabilitato())
+                                    <span class="badge bg-dark">Disabilitato</span>
+                                @else
+                                    <form method="POST" action="{{ route('anagrafiche.stato', $anagrafica) }}" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <select name="stato_dipendente" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            @foreach (\App\Models\Anagrafica::STATI_DIPENDENTE as $valore => $etichetta)
+                                                <option value="{{ $valore }}" @selected($anagrafica->stato_dipendente === $valore)>{{ $etichetta }}</option>
+                                            @endforeach
+                                        </select>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

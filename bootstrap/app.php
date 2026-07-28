@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'accesso' => \App\Http\Middleware\EnsureAccessoSelezionato::class,
             'ruolo' => \App\Http\Middleware\EnsureRuolo::class,
+            'anagrafica.attiva' => \App\Http\Middleware\EnsureAnagraficaAttiva::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

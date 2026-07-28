@@ -20,6 +20,13 @@ class Anagrafica extends Model
         'off_boarding' => 'Off Boarding',
     ];
 
+    /**
+     * Stato speciale: dipendente disabilitato al posto dell'eliminazione.
+     * Non fa parte di STATI_DIPENDENTE apposta, così non compare nei
+     * menu a tendina normali: si imposta solo tramite i pulsanti dedicati.
+     */
+    public const STATO_DISABILITATO = 'disabilitato';
+
     protected $fillable = [
         'nome',
         'cognome',
@@ -94,7 +101,16 @@ class Anagrafica extends Model
 
     public function getStatoDipendenteEtichettaAttribute(): string
     {
+        if ($this->stato_dipendente === self::STATO_DISABILITATO) {
+            return 'Disabilitato';
+        }
+
         return self::STATI_DIPENDENTE[$this->stato_dipendente] ?? $this->stato_dipendente;
+    }
+
+    public function isDisabilitato(): bool
+    {
+        return $this->stato_dipendente === self::STATO_DISABILITATO;
     }
 
     public function documenti(): HasMany

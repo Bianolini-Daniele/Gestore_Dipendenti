@@ -16,12 +16,19 @@ class AnagraficaController extends Controller
     {
         $filtro = $request->query('stato', 'tutti');
         $search = trim((string) $request->query('search', ''));
+        $isHR = session('area_accesso') === 'HR';
 
-        $query = Anagrafica::query()
-            ->when(
-                $filtro !== 'tutti' && array_key_exists($filtro, Anagrafica::STATI_DIPENDENTE),
-                fn ($query) => $query->where('stato_dipendente', $filtro)
-            );
+        $query = Anagrafica::query();
+
+        if ($filtro === 'disabilitati' && $isHR) {
+            $query->where('stato_dipendente', Anagrafica::STATO_DISABILITATO);
+        } else {
+            $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO)
+                ->when(
+                    $filtro !== 'tutti' && array_key_exists($filtro, Anagrafica::STATI_DIPENDENTE),
+                    fn ($query) => $query->where('stato_dipendente', $filtro)
+                );
+        }
 
         if ($search !== '') {
             $words = preg_split('/\s+/', trim($search));
@@ -59,7 +66,7 @@ class AnagraficaController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('anagrafiche.index', compact('anagrafiche', 'filtro', 'search'));
+        return view('anagrafiche.index', compact('anagrafiche', 'filtro', 'search', 'isHR'));
     }
 
     public function create()
@@ -90,6 +97,12 @@ class AnagraficaController extends Controller
 
     public function show(Anagrafica $anagrafica)
     {
+        abort_unless(
+            !$anagrafica->isDisabilitato() || session('area_accesso') === 'HR',
+            403,
+            'Sezione riservata all\'area HR.'
+        );
+
         return view('anagrafiche.show', compact('anagrafica'));
     }
 
@@ -118,15 +131,28 @@ class AnagraficaController extends Controller
 
     }
 
-    public function destroy(Anagrafica $anagrafica)
+    public function disabilita(Anagrafica $anagrafica): RedirectResponse
     {
-        $this->eliminaAllegati($anagrafica);
-
-        $anagrafica->delete();
+        $anagrafica->update([
+            'stato_dipendente' => Anagrafica::STATO_DISABILITATO,
+        ]);
 
         return redirect()
             ->route('anagrafiche.index')
-            ->with('success', 'Dipendente eliminato correttamente.');
+            ->with('success', 'Dipendente disabilitato correttamente.');
+    }
+
+    public function riattiva(Anagrafica $anagrafica): RedirectResponse
+    {
+        abort_unless($anagrafica->isDisabilitato(), 404);
+
+        $anagrafica->update([
+            'stato_dipendente' => 'off_boarding',
+        ]);
+
+        return redirect()
+            ->route('anagrafiche.show', $anagrafica)
+            ->with('success', 'Dipendente riportato in Off Boarding.');
     }
 
     public function updateStato(Request $request, Anagrafica $anagrafica): RedirectResponse
@@ -514,21 +540,6 @@ class AnagraficaController extends Controller
             }
 
             $anagrafica->dotazioni()->create($campi);
-        }
-    }
-
-    private function eliminaAllegati(Anagrafica $anagrafica): void
-    {
-        $allegati = [
-            $anagrafica->carta_identita_file,
-            $anagrafica->cud_file,
-            $anagrafica->corso_sicurezza_file,
-            $anagrafica->visita_medica_file,
-            $anagrafica->cv_file,
-        ];
-
-        foreach (array_filter($allegati) as $percorso) {
-            Storage::disk('local')->delete($percorso);
         }
     }
 }

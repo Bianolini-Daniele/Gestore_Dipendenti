@@ -126,12 +126,16 @@
         const urgenzaWrapper = document.getElementById('dotazione-urgenza-wrapper');
         const responsabilitaWrapper = document.getElementById('dotazione-responsabilita-wrapper');
         const statoRichiestaWrapper = document.getElementById('dotazione-stato-richiesta-wrapper');
+        const responsabilitaSelect = responsabilitaWrapper.querySelector('select[name="responsabilita"]');
 
         function aggiornaVisibilitaRichiesta() {
             const mostra = stato.value === 'richiesta';
             urgenzaWrapper.style.display = mostra ? '' : 'none';
             responsabilitaWrapper.style.display = mostra ? '' : 'none';
             statoRichiestaWrapper.style.display = mostra ? '' : 'none';
+
+            // Il campo obbligatorio non deve bloccare il salvataggio quando è nascosto
+            responsabilitaSelect.required = mostra;
         }
 
         stato.addEventListener('change', aggiornaVisibilitaRichiesta);
