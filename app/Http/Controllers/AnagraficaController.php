@@ -61,6 +61,7 @@ class AnagraficaController extends Controller
                     $query->where('stato', 'richiesta')->where('risolto', false);
                 },
             ])
+            ->orderByRaw('(documenti_da_risolvere_count + dotazioni_da_risolvere_count) desc')
             ->orderBy('cognome')
             ->orderBy('nome')
             ->paginate(20)

@@ -169,7 +169,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($documento->stato === 'richiesta' && !$isDisabilitato)
+                            @if ($documento->stato === 'richiesta')
                                 <form action="{{ route('documenti.risolvi', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
@@ -257,7 +257,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($dotazione->stato === 'richiesta' && !$isDisabilitato)
+                            @if ($dotazione->stato === 'richiesta')
                                 <form action="{{ route('dotazioni.risolvi', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')

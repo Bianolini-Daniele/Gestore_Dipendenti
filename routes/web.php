@@ -79,17 +79,15 @@ Route::middleware('accesso')->group(function () {
         ->name('anagrafiche.dotazioni.index');
 
 
-    Route::middleware('anagrafica.attiva')->group(function () {
-        Route::patch(
-            'anagrafiche/{anagrafica}/documenti/{documento}/risolvi',
-            [DocumentoController::class, 'risolvi']
-        )->name('documenti.risolvi');
+    Route::patch(
+        'anagrafiche/{anagrafica}/documenti/{documento}/risolvi',
+        [DocumentoController::class, 'risolvi']
+    )->name('documenti.risolvi');
 
-        Route::patch(
-            'anagrafiche/{anagrafica}/dotazioni/{dotazione}/risolvi',
-            [DotazioneController::class, 'risolvi']
-        )->name('dotazioni.risolvi');
-    });
+    Route::patch(
+        'anagrafiche/{anagrafica}/dotazioni/{dotazione}/risolvi',
+        [DotazioneController::class, 'risolvi']
+    )->name('dotazioni.risolvi');
 
     Route::get('documenti/{documento}/download', [DocumentoController::class, 'download'])
         ->name('documenti.download');
