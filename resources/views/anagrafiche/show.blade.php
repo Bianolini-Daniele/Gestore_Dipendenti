@@ -118,6 +118,9 @@
                 @if ($anagrafica->documenti->where('stato', 'richiesta')->where('risolto', false)->isNotEmpty())
                     <img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">
                 @endif
+                @if ($anagrafica->documenti->where('stato', 'restituzione')->where('risolto', false)->isNotEmpty())
+                    <img src="{{ asset('images/restituzione.png') }}" alt="Restituzione" width="18" height="18">
+                @endif
                 Documenti
             </strong>
             @if ($isHR && !$isDisabilitato)
@@ -210,6 +213,9 @@
             <strong>
                 @if ($anagrafica->dotazioni->where('stato', 'richiesta')->where('risolto', false)->isNotEmpty())
                     <img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">
+                @endif
+                @if ($anagrafica->dotazioni->where('stato', 'restituzione')->where('risolto', false)->isNotEmpty())
+                    <img src="{{ asset('images/restituzione.png') }}" alt="Restituzione" width="18" height="18">
                 @endif
                 Dotazioni
             </strong>

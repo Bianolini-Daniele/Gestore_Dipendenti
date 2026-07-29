@@ -54,14 +54,20 @@ class AnagraficaController extends Controller
 
         $anagrafiche = $query
             ->withCount([
-                'documenti as documenti_da_risolvere_count' => function ($query) {
+                'documenti as documenti_richiesta_count' => function ($query) {
                     $query->where('stato', 'richiesta')->where('risolto', false);
                 },
-                'dotazioni as dotazioni_da_risolvere_count' => function ($query) {
+                'documenti as documenti_restituzione_count' => function ($query) {
+                    $query->where('stato', 'restituzione')->where('risolto', false);
+                },
+                'dotazioni as dotazioni_richiesta_count' => function ($query) {
                     $query->where('stato', 'richiesta')->where('risolto', false);
+                },
+                'dotazioni as dotazioni_restituzione_count' => function ($query) {
+                    $query->where('stato', 'restituzione')->where('risolto', false);
                 },
             ])
-            ->orderByRaw('(documenti_da_risolvere_count + dotazioni_da_risolvere_count) desc')
+            ->orderByRaw('(documenti_richiesta_count + documenti_restituzione_count + dotazioni_richiesta_count + dotazioni_restituzione_count) desc')
             ->orderBy('cognome')
             ->orderBy('nome')
             ->paginate(20)
@@ -89,6 +95,10 @@ class AnagraficaController extends Controller
         $this->sincronizzaDocumenti($request, $anagrafica);
         $this->sincronizzaDotazioni($request, $anagrafica);
 
+        if ($anagrafica->stato_dipendente === 'off_boarding') {
+            $anagrafica->avviaRestituzione();
+        }
+
         return redirect()
             ->route('anagrafiche.index')
             ->with('success', 'Dipendente inserito correttamente.');
@@ -114,6 +124,8 @@ class AnagraficaController extends Controller
 
     public function update(Request $request, Anagrafica $anagrafica)
     {
+        $statoPrecedente = $anagrafica->stato_dipendente;
+
         $dati = $this->validaDati($request, $anagrafica);
 
         $dati['patente_b'] = $request->boolean('patente_b');
@@ -125,6 +137,10 @@ class AnagraficaController extends Controller
 
         $this->sincronizzaDocumenti($request, $anagrafica);
         $this->sincronizzaDotazioni($request, $anagrafica);
+
+        if ($anagrafica->stato_dipendente === 'off_boarding' && $statoPrecedente !== 'off_boarding') {
+            $anagrafica->avviaRestituzione();
+        }
 
         return redirect()
             ->route('anagrafiche.index')
@@ -151,6 +167,8 @@ class AnagraficaController extends Controller
             'stato_dipendente' => 'off_boarding',
         ]);
 
+        $anagrafica->avviaRestituzione();
+
         return redirect()
             ->route('anagrafiche.show', $anagrafica)
             ->with('success', 'Dipendente riportato in Off Boarding.');
@@ -162,9 +180,16 @@ class AnagraficaController extends Controller
             'stato_dipendente' => ['required', 'string', Rule::in(array_keys(Anagrafica::STATI_DIPENDENTE))],
         ]);
 
+        $statoPrecedente = $anagrafica->stato_dipendente;
+        $nuovoStato = $request->input('stato_dipendente');
+
         $anagrafica->update([
-            'stato_dipendente' => $request->input('stato_dipendente'),
+            'stato_dipendente' => $nuovoStato,
         ]);
+
+        if ($nuovoStato === 'off_boarding' && $statoPrecedente !== 'off_boarding') {
+            $anagrafica->avviaRestituzione();
+        }
 
         return redirect()
             ->route('anagrafiche.index')

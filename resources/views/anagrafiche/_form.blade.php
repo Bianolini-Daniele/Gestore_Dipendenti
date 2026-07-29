@@ -371,7 +371,7 @@
             const urgenzaWrapper = riga.querySelector('.riga-urgenza-wrapper');
             const responsabilitàWrapper = riga.querySelector('.riga-responsabilità-wrapper');
             const statoWrapper = riga.querySelector('.riga-stato-wrapper');
-            const richiesta = stato.value === 'richiesta';
+            const richiesta = ['richiesta', 'restituzione'].includes(stato.value);
 
             if (urgenzaWrapper && responsabilitàWrapper && statoWrapper) {
                 urgenzaWrapper.style.display = richiesta ? '' : 'none';

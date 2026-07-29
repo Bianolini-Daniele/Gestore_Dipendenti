@@ -32,7 +32,7 @@ class DocumentoController extends Controller
             'anno_conseguimento' => ['nullable', 'integer', 'min:1950', 'max:' . (date('Y') + 1)],
             'note' => ['nullable', 'string'],
             'file' => [
-                Rule::requiredIf(fn () => $request->input('stato') !== 'richiesta'),
+                Rule::requiredIf(fn () => !in_array($request->input('stato'), Documento::STATI_RICHIESTA_TIPO)),
                 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120',
             ],
         ]);
@@ -135,7 +135,7 @@ class DocumentoController extends Controller
 
         if ($stato === 'risolta') {
             $documento->update([
-                'stato' => 'in uso',
+                'stato' => $documento->stato === 'restituzione' ? 'restituito' : 'in uso',
                 'stato_richiesta' => 'risolta',
                 'risolto' => true,
                 'urgenza' => null,

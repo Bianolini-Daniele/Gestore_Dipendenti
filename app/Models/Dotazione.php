@@ -17,9 +17,15 @@ class Dotazione extends Model
     public const STATI = [
         'in uso' => 'In uso',
         'richiesta' => 'Richiesta',
-        'restituita' => 'Restituita',
+        'restituzione' => 'Restituzione',
         'dismessa' => 'Dismessa',
     ];
+
+    /**
+     * Stati che rappresentano una richiesta aperta verso IT/Admin/Altri
+     * (richiesta di una dotazione, o restituzione da gestire).
+     */
+    public const STATI_RICHIESTA_TIPO = ['richiesta', 'restituzione'];
 
     /**
      * Livelli di urgenza, usati solo quando lo stato è "richiesta".

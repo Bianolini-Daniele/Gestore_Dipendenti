@@ -85,7 +85,7 @@ class DotazioneController extends Controller
 
         if ($stato === 'risolta') {
             $dotazione->update([
-                'stato' => 'in uso',
+                'stato' => $dotazione->stato === 'restituzione' ? 'restituita' : 'in uso',
                 'stato_richiesta' => 'risolta',
                 'risolto' => true,
                 'urgenza' => null,

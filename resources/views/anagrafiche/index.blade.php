@@ -54,11 +54,15 @@
                                 <a href="{{ route('anagrafiche.show', $anagrafica) }}">{{ $anagrafica->nome_completo }}</a>
                             </td>
                             <td class="text-center">
-                                @if ($anagrafica->documenti_da_risolvere_count > 0)<img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">@endif <a href="{{ route('anagrafiche.documenti.index', $anagrafica) }}" class="{{ $anagrafica->documenti_da_risolvere_count > 0 ? 'link-richiesta' : '' }}">Documenti</a>
+                                @if ($anagrafica->documenti_richiesta_count > 0)<img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">@endif
+                                @if ($anagrafica->documenti_restituzione_count > 0)<img src="{{ asset('images/restituzione.png') }}" alt="Restituzione" width="18" height="18">@endif
+                                <a href="{{ route('anagrafiche.documenti.index', $anagrafica) }}" class="{{ ($anagrafica->documenti_richiesta_count + $anagrafica->documenti_restituzione_count) > 0 ? 'link-richiesta' : '' }}">Documenti</a>
                             </td>
 
                             <td class="text-center">
-                                @if ($anagrafica->dotazioni_da_risolvere_count > 0)<img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">@endif <a href="{{ route('anagrafiche.dotazioni.index', $anagrafica) }}" class="{{ $anagrafica->dotazioni_da_risolvere_count > 0 ? 'link-richiesta' : '' }}">Dotazioni</a>
+                                @if ($anagrafica->dotazioni_richiesta_count > 0)<img src="{{ asset('images/richiesta.png') }}" alt="Richiesta" width="18" height="18">@endif
+                                @if ($anagrafica->dotazioni_restituzione_count > 0)<img src="{{ asset('images/restituzione.png') }}" alt="Restituzione" width="18" height="18">@endif
+                                <a href="{{ route('anagrafiche.dotazioni.index', $anagrafica) }}" class="{{ ($anagrafica->dotazioni_richiesta_count + $anagrafica->dotazioni_restituzione_count) > 0 ? 'link-richiesta' : '' }}">Dotazioni</a>
                             </td>
 
                             <td>

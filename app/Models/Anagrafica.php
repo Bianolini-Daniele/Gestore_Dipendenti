@@ -122,4 +122,35 @@ class Anagrafica extends Model
     {
         return $this->hasMany(Dotazione::class);
     }
+
+    /**
+     * Porta in restituzione tutti i documenti e le dotazioni del dipendente
+     * (non solo quelli "in uso"), tranne quelli già dismessi.
+     *
+     * Viene richiamato ogni volta che lo stato dipendente diventa
+     * "off_boarding". La responsabilità viene assegnata di default a IT,
+     * che potrà poi essere corretta manualmente dall'HR se necessario.
+     */
+    public function avviaRestituzione(): void
+    {
+        $this->documenti()
+            ->whereNotIn('stato', ['dismesso'])
+            ->update([
+                'stato' => 'restituzione',
+                'urgenza' => null,
+                'responsabilita' => 'IT',
+                'stato_richiesta' => 'non_risolta',
+                'risolto' => false,
+            ]);
+
+        $this->dotazioni()
+            ->whereNotIn('stato', ['dismessa'])
+            ->update([
+                'stato' => 'restituzione',
+                'urgenza' => null,
+                'responsabilita' => 'IT',
+                'stato_richiesta' => 'non_risolta',
+                'risolto' => false,
+            ]);
+    }
 }

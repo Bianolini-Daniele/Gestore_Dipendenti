@@ -17,9 +17,15 @@ class Documento extends Model
     public const STATI = [
         'in uso' => 'In uso',
         'richiesta' => 'Richiesta',
-        'restituito' => 'Restituito',
+        'restituzione' => 'Restituzione',
         'dismesso' => 'Dismesso',
     ];
+
+    /**
+     * Stati che rappresentano una richiesta aperta verso IT/Admin/Altri
+     * (richiesta di un nuovo documento, o restituzione da gestire).
+     */
+    public const STATI_RICHIESTA_TIPO = ['richiesta', 'restituzione'];
 
     /**
      * Livelli di urgenza, usati solo quando lo stato è "richiesta".
