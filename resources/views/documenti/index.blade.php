@@ -37,7 +37,7 @@
                                 {{ \App\Models\Documento::STATI[$documento->stato] ?? $documento->stato }}
                             </span>
 
-                            @if ($documento->stato === 'richiesta')
+                            @if (in_array($documento->stato, \App\Models\Documento::STATI_RICHIESTA_TIPO))
                                 @if ($documento->urgenza)
                                     <span class="badge {{ $badgeUrgenza[$documento->urgenza] ?? 'bg-secondary' }}">
                                         Urgenza: {{ \App\Models\Documento::URGENZE[$documento->urgenza] ?? $documento->urgenza }}
@@ -63,7 +63,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($documento->stato === 'richiesta')
+                            @if (in_array($documento->stato, \App\Models\Documento::STATI_RICHIESTA_TIPO))
                                 <form action="{{ route('documenti.risolvi', [$anagrafica, $documento]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')

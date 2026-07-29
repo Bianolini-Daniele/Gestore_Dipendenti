@@ -26,7 +26,7 @@ class DocumentoController extends Controller
             'tipo_documento' => ['required', 'string', 'max:100'],
             'stato' => ['required', 'string', Rule::in(array_keys(Documento::STATI))],
             'urgenza' => ['nullable', 'string', Rule::in(array_keys(Documento::URGENZE))],
-            'responsabilita' => ['required_if:stato,richiesta', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
+            'responsabilita' => ['required_if:stato,richiesta', 'required_if:stato,restituzione', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
             'stato_richiesta' => ['nullable', 'string', Rule::in(['non_risolta', 'in_risoluzione', 'risolta'])],
             'scadenza' => ['nullable', 'date'],
             'anno_conseguimento' => ['nullable', 'integer', 'min:1950', 'max:' . (date('Y') + 1)],
@@ -41,14 +41,16 @@ class DocumentoController extends Controller
             ? $request->file('file')->store('documenti', 'public')
             : '';
 
+        $isRichiesta = in_array($dati['stato'], Documento::STATI_RICHIESTA_TIPO);
+
         $anagrafica->documenti()->create([
             'nome' => $dati['nome'],
             'tipo_documento' => $dati['tipo_documento'],
             'stato' => $dati['stato'],
-            'urgenza' => $dati['stato'] === 'richiesta' ? ($dati['urgenza'] ?? null) : null,
-            'responsabilita' => $dati['stato'] === 'richiesta' ? ($dati['responsabilita'] ?? null) : null,
-            'stato_richiesta' => $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta',
-            'risolto' => $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] === 'risolta') : false,
+            'urgenza' => $isRichiesta ? ($dati['urgenza'] ?? null) : null,
+            'responsabilita' => $isRichiesta ? ($dati['responsabilita'] ?? null) : null,
+            'stato_richiesta' => $isRichiesta ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta',
+            'risolto' => $isRichiesta ? ($dati['stato_richiesta'] === 'risolta') : false,
             'scadenza' => $dati['scadenza'] ?? null,
             'anno_conseguimento' => $dati['anno_conseguimento'] ?? null,
             'note' => $dati['note'] ?? null,
@@ -77,7 +79,7 @@ class DocumentoController extends Controller
             'tipo_documento' => ['required', 'string', 'max:100'],
             'stato' => ['required', 'string', Rule::in(array_keys(Documento::STATI))],
             'urgenza' => ['nullable', 'string', Rule::in(array_keys(Documento::URGENZE))],
-            'responsabilita' => ['required_if:stato,richiesta', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
+            'responsabilita' => ['required_if:stato,richiesta', 'required_if:stato,restituzione', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
             'stato_richiesta' => ['nullable', 'string', Rule::in(['non_risolta', 'in_risoluzione', 'risolta'])],
             'scadenza' => ['nullable', 'date'],
             'anno_conseguimento' => ['nullable', 'integer', 'min:1950', 'max:' . (date('Y') + 1)],
@@ -92,10 +94,12 @@ class DocumentoController extends Controller
             $dati['file_path'] = $request->file('file')->store('documenti', 'public');
         }
 
-        $dati['urgenza'] = $dati['stato'] === 'richiesta' ? ($dati['urgenza'] ?? null) : null;
-        $dati['responsabilita'] = $dati['stato'] === 'richiesta' ? ($dati['responsabilita'] ?? null) : null;
-        $dati['stato_richiesta'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
-        $dati['risolto'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] === 'risolta') : false;
+        $isRichiesta = in_array($dati['stato'], Documento::STATI_RICHIESTA_TIPO);
+
+        $dati['urgenza'] = $isRichiesta ? ($dati['urgenza'] ?? null) : null;
+        $dati['responsabilita'] = $isRichiesta ? ($dati['responsabilita'] ?? null) : null;
+        $dati['stato_richiesta'] = $isRichiesta ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
+        $dati['risolto'] = $isRichiesta ? ($dati['stato_richiesta'] === 'risolta') : false;
 
         $documento->update($dati);
 
@@ -123,6 +127,11 @@ class DocumentoController extends Controller
     public function risolvi(Request $request, Anagrafica $anagrafica, Documento $documento)
     {
         $stato = $request->input('stato_richiesta', 'non_risolta');
+        $isRichiesta = in_array($documento->stato, Documento::STATI_RICHIESTA_TIPO);
+
+        if (! $isRichiesta) {
+            return redirect()->back()->with('error', 'Questa operazione è valida solo per richieste o restituzioni.');
+        }
 
         if ($stato === 'risolta') {
             $documento->update([

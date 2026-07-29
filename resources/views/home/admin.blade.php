@@ -25,11 +25,27 @@
                         <th>Richiesta</th>
                         <th>
                             <div class="d-flex align-items-center justify-content-between gap-2 w-100">
+                                <span>Tipo</span>
+                                <form method="GET" action="{{ route('home.admin') }}" class="mb-0">
+                                    <input type="hidden" name="tipo" value="{{ $tipo }}">
+                                    <input type="hidden" name="stato_richiesta" value="{{ $statoRichiesta }}">
+                                    <input type="hidden" name="urgenza" value="{{ $urgenza }}">
+                                    <input type="hidden" name="search" value="{{ $search }}">
+                                    <select name="tipo_richiesta" class="form-select form-select-sm w-auto" style="background-color: #cfe2ff; border-color: #b6d4fe;" onchange="this.form.submit()">
+                                        <option value="tutti" @selected($tipoRichiesta === 'tutti')>Tutti</option>
+                                        <option value="richiesta" @selected($tipoRichiesta === 'richiesta')>Richiesta</option>
+                                        <option value="restituzione" @selected($tipoRichiesta === 'restituzione')>Restituzione</option>
+                                    </select>
+                                </form>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="d-flex align-items-center justify-content-between gap-2 w-100">
                                 <span>Urgenza della richiesta</span>
                                 <form method="GET" action="{{ route('home.admin') }}" class="mb-0">
                                     <input type="hidden" name="tipo" value="{{ $tipo }}">
                                     <input type="hidden" name="stato_richiesta" value="{{ $statoRichiesta }}">
-                                    <input type="hidden" name="stato_dipendente" value="{{ $statoDipendente }}">
+                                    <input type="hidden" name="tipo_richiesta" value="{{ $tipoRichiesta }}">
                                     <input type="hidden" name="search" value="{{ $search }}">
                                     <select name="urgenza" class="form-select form-select-sm w-auto" style="background-color: #cfe2ff; border-color: #b6d4fe;" onchange="this.form.submit()">
                                         <option value="tutti" @selected($urgenza === 'tutti')>Tutti</option>
@@ -45,7 +61,7 @@
                                 <span>Tipo richiesta</span>
                                 <form method="GET" action="{{ route('home.admin') }}" class="mb-0">
                                     <input type="hidden" name="stato_richiesta" value="{{ $statoRichiesta }}">
-                                    <input type="hidden" name="stato_dipendente" value="{{ $statoDipendente }}">
+                                    <input type="hidden" name="tipo_richiesta" value="{{ $tipoRichiesta }}">
                                     <input type="hidden" name="urgenza" value="{{ $urgenza }}">
                                     <input type="hidden" name="search" value="{{ $search }}">
                                     <select name="tipo" class="form-select form-select-sm w-auto" style="background-color: #cfe2ff; border-color: #b6d4fe;" onchange="this.form.submit()">
@@ -61,7 +77,7 @@
                                 <span>Risolta</span>
                                 <form method="GET" action="{{ route('home.admin') }}" class="mb-0">
                                     <input type="hidden" name="tipo" value="{{ $tipo }}">
-                                    <input type="hidden" name="stato_dipendente" value="{{ $statoDipendente }}">
+                                    <input type="hidden" name="tipo_richiesta" value="{{ $tipoRichiesta }}">
                                     <input type="hidden" name="urgenza" value="{{ $urgenza }}">
                                     <input type="hidden" name="search" value="{{ $search }}">
                                     <select name="stato_richiesta" class="form-select form-select-sm w-auto" style="background-color: #cfe2ff; border-color: #b6d4fe;" onchange="this.form.submit()">
@@ -74,23 +90,6 @@
                             </div>
                         </th>
                         <th>Dipendente</th>
-                        <th>
-                            <div class="d-flex align-items-center justify-content-between gap-2 w-100">
-                                <span>Stato dipendente</span>
-                                <form method="GET" action="{{ route('home.admin') }}" class="mb-0">
-                                    <input type="hidden" name="tipo" value="{{ $tipo }}">
-                                    <input type="hidden" name="stato_richiesta" value="{{ $statoRichiesta }}">
-                                    <input type="hidden" name="urgenza" value="{{ $urgenza }}">
-                                    <input type="hidden" name="search" value="{{ $search }}">
-                                    <select name="stato_dipendente" class="form-select form-select-sm w-auto" style="background-color: #cfe2ff; border-color: #b6d4fe;" onchange="this.form.submit()">
-                                        <option value="tutti" @selected($statoDipendente === 'tutti')>Tutti</option>
-                                        @foreach (\App\Models\Anagrafica::STATI_DIPENDENTE as $valore => $etichetta)
-                                            <option value="{{ $valore }}" @selected($statoDipendente === $valore)>{{ $etichetta }}</option>
-                                        @endforeach
-                                    </select>
-                                </form>
-                            </div>
-                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,6 +102,15 @@
                                         : route('dotazioni.show', $richiesta['model']);
                                 @endphp
                                 <a href="{{ $route }}" class="text-decoration-none fw-semibold">{{ $richiesta['richiesta'] }}</a>
+                            </td>
+                            <td>
+                                @php
+                                    $isRichiesta = $richiesta['tipo_richiesta_natura'] === 'richiesta';
+                                @endphp
+                                <span class="badge {{ $isRichiesta ? 'bg-success' : 'bg-warning text-dark' }}">
+                                    <img src="{{ asset('images/' . ($isRichiesta ? 'richiesta' : 'restituzione') . '.png') }}" alt="" width="14" height="14" class="me-1">
+                                    {{ $richiesta['tipo_richiesta_natura_etichetta'] }}
+                                </span>
                             </td>
                             <td>
                                 <span class="badge {{ match ($richiesta['urgenza_valore']) {
@@ -135,7 +143,6 @@
                                 @endif
                             </td>
                             <td>{{ $richiesta['dipendente'] }}</td>
-                            <td>{{ $richiesta['stato_dipendente'] }}</td>
                         </tr>
                     @empty
                         <tr>

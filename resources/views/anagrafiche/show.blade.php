@@ -137,7 +137,7 @@
                                 {{ \App\Models\Documento::STATI[$documento->stato] ?? $documento->stato }}
                             </span>
 
-                            @if ($documento->stato === 'richiesta')
+                            @if (in_array($documento->stato, \App\Models\Documento::STATI_RICHIESTA_TIPO))
                                 @if ($documento->urgenza)
                                     <span class="badge {{ $badgeUrgenza[$documento->urgenza] ?? 'bg-secondary' }}">
                                         Urgenza: {{ \App\Models\Documento::URGENZE[$documento->urgenza] ?? $documento->urgenza }}
@@ -169,7 +169,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($documento->stato === 'richiesta')
+                            @if (in_array($documento->stato, \App\Models\Documento::STATI_RICHIESTA_TIPO))
                                 <form action="{{ route('documenti.risolvi', ['anagrafica' => $anagrafica, 'documento' => $documento]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
@@ -230,7 +230,7 @@
                                 {{ \App\Models\Dotazione::STATI[$dotazione->stato] ?? $dotazione->stato }}
                             </span>
 
-                            @if ($dotazione->stato === 'richiesta')
+                            @if (in_array($dotazione->stato, \App\Models\Dotazione::STATI_RICHIESTA_TIPO))
                                 @if ($dotazione->urgenza)
                                     <span class="badge {{ $badgeUrgenza[$dotazione->urgenza] ?? 'bg-secondary' }}">
                                         Urgenza: {{ \App\Models\Dotazione::URGENZE[$dotazione->urgenza] ?? $dotazione->urgenza }}
@@ -258,7 +258,7 @@
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            @if ($dotazione->stato === 'richiesta')
+                            @if (in_array($dotazione->stato, \App\Models\Dotazione::STATI_RICHIESTA_TIPO))
                                 <form action="{{ route('dotazioni.risolvi', ['anagrafica' => $anagrafica, 'dotazione' => $dotazione]) }}" method="POST">
                                     @csrf
                                     @method('PATCH')

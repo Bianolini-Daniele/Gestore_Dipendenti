@@ -129,7 +129,7 @@
         const responsabilitaSelect = responsabilitaWrapper.querySelector('select[name="responsabilita"]');
 
         function aggiornaVisibilitaRichiesta() {
-            const mostra = stato.value === 'richiesta';
+            const mostra = ['richiesta', 'restituzione'].includes(stato.value);
             urgenzaWrapper.style.display = mostra ? '' : 'none';
             responsabilitaWrapper.style.display = mostra ? '' : 'none';
             statoRichiestaWrapper.style.display = mostra ? '' : 'none';

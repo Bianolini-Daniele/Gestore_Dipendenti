@@ -14,36 +14,32 @@ class HomeController extends Controller
     {
         $tipo = $request->input('tipo', 'tutti');
         $statoRichiesta = $request->input('stato_richiesta', 'tutti');
-        $statoDipendente = $request->input('stato_dipendente', 'tutti');
+        $tipoRichiesta = $request->input('tipo_richiesta', 'tutti');
         $urgenza = $request->input('urgenza', 'tutti');
         $search = trim((string) $request->input('search', ''));
 
         $queryDocumenti = Documento::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'IT')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
         $queryDotazioni = Dotazione::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'IT')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
+        if ($tipoRichiesta !== 'tutti') {
+            $queryDocumenti->where('stato', $tipoRichiesta);
+            $queryDotazioni->where('stato', $tipoRichiesta);
+        }
+
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
             $queryDotazioni->where('stato_richiesta', $statoRichiesta);
-        }
-
-        if ($statoDipendente !== 'tutti') {
-            $queryDocumenti->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
-            $queryDotazioni->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
         }
 
         if ($urgenza !== 'tutti') {
@@ -77,6 +73,8 @@ class HomeController extends Controller
                     'id' => $documento->id,
                     'tipo_richiesta' => 'documento',
                     'richiesta' => $documento->nome,
+                    'tipo_richiesta_natura' => $documento->stato,
+                    'tipo_richiesta_natura_etichetta' => Documento::STATI[$documento->stato] ?? $documento->stato,
                     'urgenza' => $documento->urgenza
                         ? (Documento::URGENZE[$documento->urgenza] ?? ucfirst($documento->urgenza))
                         : 'Non specificata',
@@ -85,8 +83,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($documento->stato_richiesta),
                     'risolta' => (bool) $documento->risolto,
                     'dipendente' => $documento->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $documento->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $documento->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $documento,
                 ];
             });
@@ -97,6 +93,8 @@ class HomeController extends Controller
                     'id' => $dotazione->id,
                     'tipo_richiesta' => 'dotazione',
                     'richiesta' => $dotazione->tipo_dotazione,
+                    'tipo_richiesta_natura' => $dotazione->stato,
+                    'tipo_richiesta_natura_etichetta' => Dotazione::STATI[$dotazione->stato] ?? $dotazione->stato,
                     'urgenza' => $dotazione->urgenza
                         ? (Dotazione::URGENZE[$dotazione->urgenza] ?? ucfirst($dotazione->urgenza))
                         : 'Non specificata',
@@ -105,8 +103,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($dotazione->stato_richiesta),
                     'risolta' => (bool) $dotazione->risolto,
                     'dipendente' => $dotazione->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $dotazione->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $dotazione->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $dotazione,
                 ];
             });
@@ -117,7 +113,7 @@ class HomeController extends Controller
             default => $documenti->concat($dotazioni)->values(),
         };
 
-        return view('home.it', compact('richieste', 'tipo', 'statoRichiesta', 'statoDipendente', 'urgenza', 'search'));
+        return view('home.it', compact('richieste', 'tipo', 'statoRichiesta', 'tipoRichiesta', 'urgenza', 'search'));
     }
 
     private function etichettaStatoRichiesta(string $stato): string
@@ -133,36 +129,32 @@ class HomeController extends Controller
     {
         $tipo = $request->input('tipo', 'tutti');
         $statoRichiesta = $request->input('stato_richiesta', 'tutti');
-        $statoDipendente = $request->input('stato_dipendente', 'tutti');
+        $tipoRichiesta = $request->input('tipo_richiesta', 'tutti');
         $urgenza = $request->input('urgenza', 'tutti');
         $search = trim((string) $request->input('search', ''));
 
         $queryDocumenti = Documento::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'Admin')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
         $queryDotazioni = Dotazione::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'Admin')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
+        if ($tipoRichiesta !== 'tutti') {
+            $queryDocumenti->where('stato', $tipoRichiesta);
+            $queryDotazioni->where('stato', $tipoRichiesta);
+        }
+
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
             $queryDotazioni->where('stato_richiesta', $statoRichiesta);
-        }
-
-        if ($statoDipendente !== 'tutti') {
-            $queryDocumenti->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
-            $queryDotazioni->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
         }
 
         if ($urgenza !== 'tutti') {
@@ -196,6 +188,8 @@ class HomeController extends Controller
                     'id' => $documento->id,
                     'tipo_richiesta' => 'documento',
                     'richiesta' => $documento->nome,
+                    'tipo_richiesta_natura' => $documento->stato,
+                    'tipo_richiesta_natura_etichetta' => Documento::STATI[$documento->stato] ?? $documento->stato,
                     'urgenza' => $documento->urgenza
                         ? (Documento::URGENZE[$documento->urgenza] ?? ucfirst($documento->urgenza))
                         : 'Non specificata',
@@ -204,8 +198,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($documento->stato_richiesta),
                     'risolta' => (bool) $documento->risolto,
                     'dipendente' => $documento->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $documento->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $documento->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $documento,
                 ];
             });
@@ -216,6 +208,8 @@ class HomeController extends Controller
                     'id' => $dotazione->id,
                     'tipo_richiesta' => 'dotazione',
                     'richiesta' => $dotazione->tipo_dotazione,
+                    'tipo_richiesta_natura' => $dotazione->stato,
+                    'tipo_richiesta_natura_etichetta' => Dotazione::STATI[$dotazione->stato] ?? $dotazione->stato,
                     'urgenza' => $dotazione->urgenza
                         ? (Dotazione::URGENZE[$dotazione->urgenza] ?? ucfirst($dotazione->urgenza))
                         : 'Non specificata',
@@ -224,8 +218,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($dotazione->stato_richiesta),
                     'risolta' => (bool) $dotazione->risolto,
                     'dipendente' => $dotazione->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $dotazione->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $dotazione->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $dotazione,
                 ];
             });
@@ -236,43 +228,39 @@ class HomeController extends Controller
             default => $documenti->concat($dotazioni)->values(),
         };
 
-        return view('home.admin', compact('richieste', 'tipo', 'statoRichiesta', 'statoDipendente', 'urgenza', 'search'));
+        return view('home.admin', compact('richieste', 'tipo', 'statoRichiesta', 'tipoRichiesta', 'urgenza', 'search'));
     }
 
     public function altro(Request $request): View
     {
         $tipo = $request->input('tipo', 'tutti');
         $statoRichiesta = $request->input('stato_richiesta', 'tutti');
-        $statoDipendente = $request->input('stato_dipendente', 'tutti');
+        $tipoRichiesta = $request->input('tipo_richiesta', 'tutti');
         $urgenza = $request->input('urgenza', 'tutti');
         $search = trim((string) $request->input('search', ''));
 
         $queryDocumenti = Documento::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'Altri')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
         $queryDotazioni = Dotazione::with('anagrafica')
-            ->where('stato', 'richiesta')
+            ->whereIn('stato', ['richiesta', 'restituzione'])
             ->where('responsabilita', 'Altri')
             ->whereHas('anagrafica', function ($query) {
                 $query->where('stato_dipendente', '!=', Anagrafica::STATO_DISABILITATO);
             });
 
+        if ($tipoRichiesta !== 'tutti') {
+            $queryDocumenti->where('stato', $tipoRichiesta);
+            $queryDotazioni->where('stato', $tipoRichiesta);
+        }
+
         if ($statoRichiesta !== 'tutti') {
             $queryDocumenti->where('stato_richiesta', $statoRichiesta);
             $queryDotazioni->where('stato_richiesta', $statoRichiesta);
-        }
-
-        if ($statoDipendente !== 'tutti') {
-            $queryDocumenti->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
-            $queryDotazioni->whereHas('anagrafica', function ($query) use ($statoDipendente) {
-                $query->where('stato_dipendente', $statoDipendente);
-            });
         }
 
         if ($urgenza !== 'tutti') {
@@ -306,6 +294,8 @@ class HomeController extends Controller
                     'id' => $documento->id,
                     'tipo_richiesta' => 'documento',
                     'richiesta' => $documento->nome,
+                    'tipo_richiesta_natura' => $documento->stato,
+                    'tipo_richiesta_natura_etichetta' => Documento::STATI[$documento->stato] ?? $documento->stato,
                     'urgenza' => $documento->urgenza
                         ? (Documento::URGENZE[$documento->urgenza] ?? ucfirst($documento->urgenza))
                         : 'Non specificata',
@@ -314,8 +304,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($documento->stato_richiesta),
                     'risolta' => (bool) $documento->risolto,
                     'dipendente' => $documento->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $documento->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $documento->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $documento,
                 ];
             });
@@ -326,6 +314,8 @@ class HomeController extends Controller
                     'id' => $dotazione->id,
                     'tipo_richiesta' => 'dotazione',
                     'richiesta' => $dotazione->tipo_dotazione,
+                    'tipo_richiesta_natura' => $dotazione->stato,
+                    'tipo_richiesta_natura_etichetta' => Dotazione::STATI[$dotazione->stato] ?? $dotazione->stato,
                     'urgenza' => $dotazione->urgenza
                         ? (Dotazione::URGENZE[$dotazione->urgenza] ?? ucfirst($dotazione->urgenza))
                         : 'Non specificata',
@@ -334,8 +324,6 @@ class HomeController extends Controller
                     'stato_richiesta_etichetta' => $this->etichettaStatoRichiesta($dotazione->stato_richiesta),
                     'risolta' => (bool) $dotazione->risolto,
                     'dipendente' => $dotazione->anagrafica?->nome_completo ?? 'N/D',
-                    'stato_dipendente' => $dotazione->anagrafica?->stato_dipendente_etichetta ?? 'N/D',
-                    'stato_dipendente_valore' => $dotazione->anagrafica?->stato_dipendente ?? 'N/D',
                     'model' => $dotazione,
                 ];
             });
@@ -346,6 +334,6 @@ class HomeController extends Controller
             default => $documenti->concat($dotazioni)->values(),
         };
 
-        return view('home.altro', compact('richieste', 'tipo', 'statoRichiesta', 'statoDipendente', 'urgenza', 'search'));
+        return view('home.altro', compact('richieste', 'tipo', 'statoRichiesta', 'tipoRichiesta', 'urgenza', 'search'));
     }
 }

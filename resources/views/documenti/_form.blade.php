@@ -120,7 +120,7 @@
 <button type="submit" class="btn btn-primary">Salva</button>
 <a href="{{ route('anagrafiche.show', $anagrafica) }}" class="btn btn-secondary">Annulla</a>
 
-<script>
+    <script>
     (function () {
         const stato = document.getElementById('documento-stato');
         const urgenzaWrapper = document.getElementById('documento-urgenza-wrapper');
@@ -129,7 +129,7 @@
         const responsabilitaSelect = responsabilitaWrapper.querySelector('select[name="responsabilita"]');
 
         function aggiornaVisibilitaRichiesta() {
-            const mostra = stato.value === 'richiesta';
+            const mostra = ['richiesta', 'restituzione'].includes(stato.value);
             urgenzaWrapper.style.display = mostra ? '' : 'none';
             responsabilitaWrapper.style.display = mostra ? '' : 'none';
             statoRichiestaWrapper.style.display = mostra ? '' : 'none';
@@ -141,4 +141,4 @@
         stato.addEventListener('change', aggiornaVisibilitaRichiesta);
         aggiornaVisibilitaRichiesta();
     })();
-</script>
+    </script>

@@ -22,10 +22,11 @@ class DotazioneController extends Controller
     public function store(Request $request, Anagrafica $anagrafica)
     {
         $dati = $this->validaDati($request);
-        $dati['urgenza'] = $dati['stato'] === 'richiesta' ? ($dati['urgenza'] ?? null) : null;
-        $dati['responsabilita'] = $dati['stato'] === 'richiesta' ? ($dati['responsabilita'] ?? null) : null;
-        $dati['stato_richiesta'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
-        $dati['risolto'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] === 'risolta') : false;
+        $isRichiesta = in_array($dati['stato'], Dotazione::STATI_RICHIESTA_TIPO);
+        $dati['urgenza'] = $isRichiesta ? ($dati['urgenza'] ?? null) : null;
+        $dati['responsabilita'] = $isRichiesta ? ($dati['responsabilita'] ?? null) : null;
+        $dati['stato_richiesta'] = $isRichiesta ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
+        $dati['risolto'] = $isRichiesta ? ($dati['stato_richiesta'] === 'risolta') : false;
 
         $anagrafica->dotazioni()->create($dati);
 
@@ -47,10 +48,11 @@ class DotazioneController extends Controller
     public function update(Request $request, Anagrafica $anagrafica, Dotazione $dotazione)
     {
         $dati = $this->validaDati($request);
-        $dati['urgenza'] = $dati['stato'] === 'richiesta' ? ($dati['urgenza'] ?? null) : null;
-        $dati['responsabilita'] = $dati['stato'] === 'richiesta' ? ($dati['responsabilita'] ?? null) : null;
-        $dati['stato_richiesta'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
-        $dati['risolto'] = $dati['stato'] === 'richiesta' ? ($dati['stato_richiesta'] === 'risolta') : false;
+        $isRichiesta = in_array($dati['stato'], Dotazione::STATI_RICHIESTA_TIPO);
+        $dati['urgenza'] = $isRichiesta ? ($dati['urgenza'] ?? null) : null;
+        $dati['responsabilita'] = $isRichiesta ? ($dati['responsabilita'] ?? null) : null;
+        $dati['stato_richiesta'] = $isRichiesta ? ($dati['stato_richiesta'] ?? 'non_risolta') : 'non_risolta';
+        $dati['risolto'] = $isRichiesta ? ($dati['stato_richiesta'] === 'risolta') : false;
 
         $dotazione->update($dati);
 
@@ -75,6 +77,11 @@ class DotazioneController extends Controller
     public function risolvi(Request $request, Anagrafica $anagrafica, Dotazione $dotazione)
     {
         $stato = $request->input('stato_richiesta', 'non_risolta');
+        $isRichiesta = in_array($dotazione->stato, Dotazione::STATI_RICHIESTA_TIPO);
+
+        if (! $isRichiesta) {
+            return redirect()->back()->with('error', 'Questa operazione è valida solo per richieste o restituzioni.');
+        }
 
         if ($stato === 'risolta') {
             $dotazione->update([
@@ -109,7 +116,7 @@ class DotazioneController extends Controller
             ],
             'stato' => ['required', 'string', Rule::in(array_keys(Dotazione::STATI))],
             'urgenza' => ['nullable', 'string', Rule::in(array_keys(Dotazione::URGENZE))],
-            'responsabilita' => ['required_if:stato,richiesta', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
+            'responsabilita' => ['required_if:stato,richiesta', 'required_if:stato,restituzione', 'nullable', 'string', Rule::in(['IT', 'Admin', 'Altri'])],
             'stato_richiesta' => ['nullable', 'string', Rule::in(['non_risolta', 'in_risoluzione', 'risolta'])],
             'note' => ['nullable', 'string'],
         ]);

@@ -1,14 +1,37 @@
-# TODO - Search Behavior Fix
+# TODO: Aggiungere stato "restituzione" per dotazioni e documenti
 
-## ✅ Step 1: HomeController.php — Fix Non-HR Search (IT/Admin/Altri) [DONE]
-- In `it()`, `admin()`, and `altro()` methods: added `CONCAT_WS` conditions so full name search ("Mario Rossi") also works, alongside existing individual nome/cognome LIKE search.
+## 1. Controller - DocumentoController.php ✅
+- [x] `store()`: cambiare `$dati['stato'] === 'richiesta'` → `in_array($dati['stato'], Documento::STATI_RICHIESTA_TIPO)`
+- [x] `update()`: idem
+- [x] `risolvi()`: idem
+- [x] `required_if` per responsabilita include 'restituzione'
 
-## ✅ Step 2: AnagraficaController.php — Fix HR Search (Strict Full Name) [DONE]
-- Replaced current `nome LIKE '%term%' OR cognome LIKE '%term%'` with logic that requires **all space-separated words** in the search to match either nome or cognome.
-- This ensures a specific employee appears only when nome AND cognome are typed.
+## 2. Controller - DotazioneController.php ✅
+- [x] `validaDati()`: `required_if:stato,richiesta,restituzione`
+- [x] `store()`: condizioni per STATI_RICHIESTA_TIPO
+- [x] `update()`: idem
+- [x] `risolvi()`: idem
 
-## ✅ Step 3: Verify [DONE]
-- No views, migrations, or routes were changed — only controller logic.
-- HR search now correctly requires full nome + cognome for auto-redirect.
-- Non-HR search now matches any part of the name, including full name.
+## 3. Forms - Documenti ✅
+- [x] `_form.blade.php`: JS include 'restituzione'
+- [x] `_riga_documento.blade.php` (già gestito dalla logica dello stato)
+
+## 4. Forms - Dotazioni ✅
+- [x] `_form.blade.php`: JS include 'restituzione'
+- [x] `_riga_dotazione.blade.php` (già gestito dalla logica dello stato)
+
+## 5. Views elenco dipendente ✅
+- [x] `documenti/index.blade.php`: badge/bottoni per STATI_RICHIESTA_TIPO
+- [x] `dotazioni/index.blade.php`: badge/bottoni per STATI_RICHIESTA_TIPO
+- [x] `anagrafiche/show.blade.php`: badge/bottoni per STATI_RICHIESTA_TIPO
+
+## 6. HomeController ✅
+- [x] `it()`: `whereIn(['richiesta','restituzione'])`, rimosso stato_dipendente, aggiunto filtro tipo_richiesta
+- [x] `admin()`: idem
+- [x] `altro()`: idem
+
+## 7. Home views ✅
+- [x] `home/it.blade.php`: rimosso colonna stato_dipendente, aggiunta colonna Tipo con badge e filtro
+- [x] `home/admin.blade.php`: idem
+- [x] `home/altro.blade.php`: idem
 
